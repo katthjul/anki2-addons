@@ -3,8 +3,6 @@ from anki.utils import ids2str, stripHTML
 from aqt import mw
 
 # List of (model, field)
-# OBS: If model is 'Japanese' it will match any model name containing that word,
-#      i.e. 'RTK Japanese', 'Japanese Core', etc..
 targets = [('Japanese', 'Expression')]
 
 def onSearch(cmds):
@@ -38,7 +36,7 @@ def findBy(fn, val):
 
 def isTargetField((model, field)):
     for (m, f) in targets:
-        if m.lower() in model['name'].lower() and f == field['name']:
+        if m in model['name'] and f == field['name']:
             return True
     return False
 

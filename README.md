@@ -2,7 +2,7 @@
 A collection of add-ons for [Anki 2](http://http://ankisrs.net/).
 
 ## Length filter in browser
-Find sentences of a certain exact/maximum/minimum length in the browser.
+Find sentences of a given exact/maximum/minimum length in the browser.
 
 File(s): *length.py*
 
