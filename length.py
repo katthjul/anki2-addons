@@ -1,31 +1,34 @@
 from anki.hooks import addHook
+from anki.utils import ids2str, stripHTML
 from aqt import mw
-from aqt.utils import showInfo
 
-models = ['japanese', 'rtk']
-srcFields = ['Expression', 'Word']
+# List of (model, field)
+# OBS: If model is 'Japanese' it will match any model name with that word,
+#      i.e. 'RTK Japanese', 'Japanese Core', etc..
+targetFields = [('Japanese', 'Expression')]
 
-# Execute method when leaving the field
-def onFocusLost(flag, n, fidx):
-    for m in models:
-        if m not in n.model()['name'].lower():
-            return flag
-    src = None
-    for c, name in enumerate(mw.col.models.fieldNames(n.model())):
-        for f in srcFields:
-            if name == f:
-                src = f
-                srcIdx = c
-    if not src:
-        return flag
-    if fidx != srcIdx:
-        return flag
-    if n.dupeOrEmpty():
-        return flag
-    srcTxt = mw.col.media.strip(n[src])
-    if not srcTxt:
-        return flag
-    showInfo("Length of '%s' is %i" % (src, len(srcTxt)))
-    return True
+def onSearch(cmds):
+    cmds['max'] = findByMaxLength
 
-addHook('editFocusLost', onFocusLost)
+def findByMaxLength((val, args)):
+    mods = {}
+    for m in mw.col.models.all():
+        for f in m['flds']:
+            if isTargetField((m, f)):
+                mods[str(m['id'])] = f
+    nids = []
+    for mid in mods:
+        for nid in mw.col.findNotes("mid:%s" % mid):
+            note = mw.col.getNote(nid)
+            text = stripHTML(note[mods[mid]['name']])
+            if len(text) <= int(val):
+                nids.append(nid)
+    return "n.id in %s" % ids2str(nids)
+
+def isTargetField((model, field)):
+    for (m, f) in targetFields:
+        if m.lower() in model['name'].lower() and f == field['name']:
+            return True
+    return False
+
+addHook('search', onSearch)
