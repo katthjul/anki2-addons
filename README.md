@@ -16,4 +16,4 @@ ToDo
 
 * Write usage for *max* command
 * Write usage for *min* command
-* Add *len* command
+* Write usage for *len* command

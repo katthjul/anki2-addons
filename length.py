@@ -8,8 +8,12 @@ from aqt import mw
 targets = [('Japanese', 'Expression')]
 
 def onSearch(cmds):
+    cmds['len'] = findByExactLength
     cmds['max'] = findByMaxLength
     cmds['min'] = findByMinLength
+
+def findByExactLength((val, args)):
+    return findBy(lambda x, y: len(x) == int(y), val)
 
 def findByMaxLength((val, args)):
     return findBy(lambda x, y: len(x) <= int(y), val)
