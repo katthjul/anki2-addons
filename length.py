@@ -9,9 +9,13 @@ targets = [('Japanese', 'Expression')]
 
 def onSearch(cmds):
     cmds['max'] = findByMaxLength
+    cmds['min'] = findByMinLength
 
 def findByMaxLength((val, args)):
     return findBy(lambda x, y: len(x) <= int(y), val)
+
+def findByMinLength((val, args)):
+    return findBy(lambda x, y: len(x) >= int(y), val)
 
 def findBy(fn, val):
     mods = {}
