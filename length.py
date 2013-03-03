@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from anki.hooks import addHook
 from anki.utils import ids2str, stripHTML
 from aqt import mw
