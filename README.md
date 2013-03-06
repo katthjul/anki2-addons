@@ -34,5 +34,3 @@ The add-on extends the available search commands in the browser. By default, it 
 <dt>min:5</dt>
 <dd>find notes with Expression field having a length of at least 5 characters, like "キムです。", "はい、そうです。", etc.</dd>
 </dl>
-
-### Status
