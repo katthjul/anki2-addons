@@ -58,6 +58,16 @@ def formatFrameNumbers(nids):
     mw.progress.finish()
     mw.reset()
 
+def repositionCards(nids):
+    mw.checkpoint("Reposition cards")
+    mw.progress.start()
+    for nid in nids:
+        note = mw.col.getNote(nid)
+        print nid
+        note.flush()
+    mw.progress.finish()
+    mw.reset()
+
 def setupMenu(browser):
     menuCloze = QMenu(browser.form.menubar)
     menuCloze.setTitle("&Cloze")
@@ -66,9 +76,15 @@ def setupMenu(browser):
     a = QAction("Format frame numbers", browser)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onFormat(e))
     menuCloze.addAction(a)
+    a = QAction("Reposition cards", menuCloze)
+    browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onReposition(e))
+    menuCloze.addAction(a)
 
 def onFormat(browser):
     formatFrameNumbers(browser.selectedNotes())
+
+def onReposition(browser):
+    repositionCards(browser.selectedNotes())
 
 initAddon()
 addHook("browser.setupMenus", setupMenu)

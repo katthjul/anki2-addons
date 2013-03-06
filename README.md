@@ -1,8 +1,25 @@
 # anki2-addons
 A collection of add-ons for [Anki 2](http://http://ankisrs.net/).
 
-## Length filter in browser
+## Generate clozes from frame numbers
+Generate clozes from frame numbers listed in field Extras.
+
+Status: **Alpha**
+
+File(s): *cloze_creator.py*, *cloze_creator/frame-list.txt*
+
+### Usage
+The add-on creates a new menu Cloze in the browser. The menu contains several operations that can be done to cards with the note type Cloze.
+
+<dl>
+<dt>Format frame numbers</dt>
+<dd>If the field Extra contains a list of numbers, each number will be used to look up the kanji with the same frame number from the <a href="http://www.coscom.co.jp/ebook/item_2001kanji.html">2001.Kanji.Odyssey series</a>, like "32 19" will be formatted as "今32 日19".</dd>
+</dl>
+
+## Search by length in browser
 Find sentences of a given exact/maximum/minimum length in the browser.
+
+Status: **Experimental**. Requires changes to Anki 2, see [Ticket 699](https://anki.lighthouseapp.com/projects/100923-ankidesktop/tickets/699-add-hook-for-search-command).
 
 File(s): *length.py*
 
@@ -19,4 +36,3 @@ The add-on extends the available search commands in the browser. By default, it 
 </dl>
 
 ### Status
-Experimental. Requires changes to Anki 2, see [Ticket 699](https://anki.lighthouseapp.com/projects/100923-ankidesktop/tickets/699-add-hook-for-search-command).
