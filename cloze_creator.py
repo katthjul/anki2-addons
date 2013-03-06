@@ -23,20 +23,24 @@ def initAddon():
         k2fdict[a] = b
         f2kdict[b] = a
 
+def targetFields(note):
+    model = None
+    cloze = None
+    extra = None
+    for (m,c,e) in targets:
+       if m in note.model()['name'] and note[c] and note[e]:
+           model = m
+           cloze = c
+           extra = e
+           break
+    return (model,cloze,extra)
+
 def formatFrameNumbers(nids):
     mw.checkpoint("Format frame numbers")
     mw.progress.start()
     for nid in nids:
         note = mw.col.getNote(nid)
-        model = None
-        cloze = None
-        extra = None
-        for (m,c,e) in targets:
-           if m in note.model()['name'] and note[c] and note[e]:
-               model = m
-               cloze = c
-               extra = e
-               break
+        (model,cloze,extra) = targetFields(note)
         # found model? does it contain data?
         if not model or not note[extra]:
            continue
