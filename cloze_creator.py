@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import os, re
 from anki.hooks import addHook
+from anki.utils import stripHTML
 from aqt import mw
 from aqt.qt import *
 import codecs
@@ -33,42 +34,66 @@ def targetFields(note):
            break
     return (cloze,extra)
 
+def extractFrameNumbers(text):
+    matches = re.findall("\s*(\D)(\d+)", text)
+    return dict([(c,int(f)) for (c,f) in matches])
+
+def extractClozes(text):
+    c2k = {}
+    for (ci,ct) in re.findall("{{c(\d+)::(.+?)}}", text):
+        kanji = ct.split("::")[0]
+        # zero-based index
+        c2k[int(ci)-1] = kanji
+    return c2k
+
 def formatFrameNumbers(nids):
     mw.checkpoint("Format frame numbers")
     mw.progress.start()
     for nid in nids:
         note = mw.col.getNote(nid)
-        (cloze,extra) = targetFields(note)
+        (c,e) = targetFields(note)
         # does it contain data?
-        if not extra and not note[extra]:
+        if not e and not note[e]:
            continue
-        extraText = mw.col.media.strip(note[extra])
+        extraText = mw.col.media.strip(note[e])
         txt = []
-        for frame in extraText.split():
-            kanji = f2kdict[frame]
-            if not kanji:
+        for token in extraText.split():
+            kanji = f2kdict[token]
+            frame = k2fdict[token]
+            if not kanji and not frame:
                # don't destroy data
-               txt.append(frame)
+               txt.append(token)
                continue
-            txt.append(kanji + frame)
-        note[extra] = u' '.join(txt)
+            if kanji:
+                txt.append(kanji + token)
+            else:
+                txt.append(token + frame)
+        note[e] = u' '.join(txt)
         note.flush()
     mw.progress.finish()
     mw.reset()
 
-def repositionCards(nids):
+def repositionCards(cids):
     mw.checkpoint("Reposition cards")
     mw.progress.start()
-    for nid in nids:
-        note = mw.col.getNote(nid)
-        (cloze,extra) = targetFields(note)
+    for cid in cids:
+        card = mw.col.getCard(cid)
+        note = card.note()
+        (c,e) = targetFields(note)
         # does it contain data?
-        if not cloze or not extra:
+        if not c or not e:
            continue
-        clozeText = mw.col.media.strip(note[cloze])
-        for m in re.findall("{{(c\d+::.+?)}}", clozeText):
-            key = m.split("::")[1]
-        note.flush()
+        clozeText = stripHTML(mw.col.media.strip(note[c]))
+        k2f = extractFrameNumbers(note[e])
+        c2k = extractClozes(clozeText)
+        # only modify new cards
+        if card.type != 0:
+            continue
+        kanji = c2k[card.ord]
+        if kanji not in k2f:
+            continue
+        card.due = k2f[kanji]
+        card.flush()
     mw.progress.finish()
     mw.reset()
 
@@ -88,7 +113,7 @@ def onFormat(browser):
     formatFrameNumbers(browser.selectedNotes())
 
 def onReposition(browser):
-    repositionCards(browser.selectedNotes())
+    repositionCards(browser.selectedCards())
 
 initAddon()
 addHook("browser.setupMenus", setupMenu)
