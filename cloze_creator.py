@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
+import os, re
 from anki.hooks import addHook
 from aqt import mw
 from aqt.qt import *
 import codecs
 from collections import defaultdict
-import os
 
 # (model, source, destination)
 targets = [
@@ -24,25 +24,23 @@ def initAddon():
         f2kdict[b] = a
 
 def targetFields(note):
-    model = None
     cloze = None
     extra = None
     for (m,c,e) in targets:
        if m in note.model()['name'] and note[c] and note[e]:
-           model = m
            cloze = c
            extra = e
            break
-    return (model,cloze,extra)
+    return (cloze,extra)
 
 def formatFrameNumbers(nids):
     mw.checkpoint("Format frame numbers")
     mw.progress.start()
     for nid in nids:
         note = mw.col.getNote(nid)
-        (model,cloze,extra) = targetFields(note)
-        # found model? does it contain data?
-        if not model or not note[extra]:
+        (cloze,extra) = targetFields(note)
+        # does it contain data?
+        if not extra and not note[extra]:
            continue
         extraText = mw.col.media.strip(note[extra])
         txt = []
@@ -63,7 +61,13 @@ def repositionCards(nids):
     mw.progress.start()
     for nid in nids:
         note = mw.col.getNote(nid)
-        print nid
+        (cloze,extra) = targetFields(note)
+        # does it contain data?
+        if not cloze or not extra:
+           continue
+        clozeText = mw.col.media.strip(note[cloze])
+        for m in re.findall("{{(c\d+::.+?)}}", clozeText):
+            key = m.split("::")[1]
         note.flush()
     mw.progress.finish()
     mw.reset()
