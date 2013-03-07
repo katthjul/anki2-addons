@@ -13,7 +13,7 @@ The add-on creates a new menu Cloze in the browser. The menu contains several op
 
 <dl>
 <dt>Format frame numbers</dt>
-<dd>If the field Extra contains a list of numbers, each number will be used to look up the kanji with the same frame number from the <a href="http://www.coscom.co.jp/ebook/item_2001kanji.html">2001.Kanji.Odyssey series</a>, like "32 19" will be formatted as "今32 日19".</dd>
+<dd>If the field Extra contains a list of numbers or kanji, each number or kanji will be used to look up the corresponding frame from the <a href="http://www.coscom.co.jp/ebook/item_2001kanji.html">2001.Kanji.Odyssey series</a>, like "32 二 19" will be formatted as "今32 二2 日19".</dd>
 <dt>Reposition cards</dt>
 <dd>Every cloze will be repositioned based on the frame number of the kanji. If a cloze is not a kanji or a kanji without a frame number, its position will not change. A note with field Text like "{{c1::今}}日は{{c2::水::すい}}{{c3::曜}}日です。" and field Extra "今32 水22" will have its first and second card repositioned to 32 respective 22 (the third is unchanged).</dd>
 </dl>
