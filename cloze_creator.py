@@ -28,7 +28,7 @@ def targetFields(note):
     cloze = None
     extra = None
     for (m,c,e) in targets:
-       if m in note.model()['name'] and note[c] and note[e]:
+       if m in note.model()['name']:
            cloze = c
            extra = e
            break
@@ -46,6 +46,15 @@ def extractClozes(text):
         c2k[int(ci)-1] = kanji
     return c2k
 
+def formatFrameNumber(token):
+    kanji = f2kdict[token]
+    frame = k2fdict[token]
+    if not kanji and not frame:
+       return None
+    if kanji:
+        return kanji + token
+    return token + frame
+
 def formatFrameNumbers(nids):
     mw.checkpoint("Format frame numbers")
     mw.progress.start()
@@ -58,16 +67,12 @@ def formatFrameNumbers(nids):
         extraText = mw.col.media.strip(note[e])
         txt = []
         for token in extraText.split():
-            kanji = f2kdict[token]
-            frame = k2fdict[token]
-            if not kanji and not frame:
-               # don't destroy data
+            frame = formatFrameNumber(token)
+            # don't destroy data
+            if not frame:
                txt.append(token)
                continue
-            if kanji:
-                txt.append(kanji + token)
-            else:
-                txt.append(token + frame)
+            txt.append(frame)
         note[e] = u' '.join(txt)
         note.flush()
     mw.progress.finish()
@@ -97,6 +102,25 @@ def repositionCards(cids):
     mw.progress.finish()
     mw.reset()
 
+def regenerateFrameNumbers(nids):
+    mw.checkpoint("Regenerate frame numbers")
+    mw.progress.start()
+    for nid in nids:
+        note = mw.col.getNote(nid)
+        (c,e) = targetFields(note)
+        # right note type?
+        if not c:
+           continue
+        clozeText = stripHTML(mw.col.media.strip(note[c]))
+        frames = []
+        for c in clozeText:
+            if c in k2fdict:
+                frames.append(formatFrameNumber(c))
+        note[e] = u' '.join(set(frames))
+        note.flush()
+    mw.progress.finish()
+    mw.reset()
+
 def setupMenu(browser):
     menuCloze = QMenu(browser.form.menubar)
     menuCloze.setTitle("&Cloze")
@@ -108,12 +132,19 @@ def setupMenu(browser):
     a = QAction("Reposition cards", menuCloze)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onReposition(e))
     menuCloze.addAction(a)
+    menuCloze.addSeparator()
+    a = QAction("Regenerate frame numbers", browser)
+    browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onRegenerate(e))
+    menuCloze.addAction(a)
 
 def onFormat(browser):
     formatFrameNumbers(browser.selectedNotes())
 
 def onReposition(browser):
     repositionCards(browser.selectedCards())
+
+def onRegenerate(browser):
+    regenerateFrameNumbers(browser.selectedNotes())
 
 initAddon()
 addHook("browser.setupMenus", setupMenu)
