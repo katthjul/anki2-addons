@@ -126,14 +126,14 @@ def setupMenu(browser):
     menuCloze.setTitle("&Cloze")
     browser.form.menubar.insertMenu(
         browser.form.menu_Help.menuAction(), menuCloze)
-    a = QAction("Format frame numbers", browser)
+    a = QAction("&Format frame numbers", browser)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onFormat(e))
     menuCloze.addAction(a)
-    a = QAction("Reposition cards", menuCloze)
+    a = QAction("Re&position cards", menuCloze)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onReposition(e))
     menuCloze.addAction(a)
     menuCloze.addSeparator()
-    a = QAction("Regenerate frame numbers", browser)
+    a = QAction("Re&generate frame numbers", browser)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onRegenerate(e))
     menuCloze.addAction(a)
 
