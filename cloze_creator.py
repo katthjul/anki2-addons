@@ -108,12 +108,11 @@ def createClozes(nids):
     mw.progress.finish()
     mw.reset()
 
-def repositionCards(cids):
+def repositionCards(nids):
     mw.checkpoint("Reposition cards")
     mw.progress.start()
-    for cid in cids:
-        card = mw.col.getCard(cid)
-        note = card.note()
+    for nid in nids:
+        note = mw.col.getNote(nid)
         (c,e) = targetFields(note)
         # does it contain data?
         if not c or not e:
@@ -121,14 +120,15 @@ def repositionCards(cids):
         clozeText = stripHTML(mw.col.media.strip(note[c]))
         k2f = extractFrameNumbers(note[e])
         c2k = extractClozes(clozeText)
-        # only modify new cards
-        if card.type != 0:
-            continue
-        kanji = c2k[card.ord + 1]
-        if kanji not in k2f:
-            continue
-        card.due = k2f[kanji]
-        card.flush()
+        for card in note.cards():
+            # only modify new cards
+            if card.type != 0:
+                continue
+            kanji = c2k[card.ord + 1]
+            if kanji not in k2f:
+                continue
+            card.due = k2f[kanji]
+            card.flush()
     mw.progress.finish()
     mw.reset()
 
@@ -177,7 +177,7 @@ def onCreate(browser):
     createClozes(browser.selectedNotes())
 
 def onReposition(browser):
-    repositionCards(browser.selectedCards())
+    repositionCards(browser.selectedNotes())
 
 def onRegenerate(browser):
     regenerateFrameNumbers(browser.selectedNotes())
