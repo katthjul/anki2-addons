@@ -12,6 +12,8 @@ File(s): *cloze_creator.py*, *cloze_creator/frame-list.txt*
 The add-on creates a new menu Cloze in the browser. The menu contains several operations that can be done to cards with the note type Cloze.
 
 <dl>
+<dt>Bulk-add clozes</dt>
+<dd>The action executes the following in order: *Format frame number*, *Create clozes*, and *Reposition cards*.</dd>
 <dt>Format frame numbers</dt>
 <dd>If the field Extra contains a list of numbers or kanji, each number or kanji will be used to look up the corresponding frame from the <a href="http://www.coscom.co.jp/ebook/item_2001kanji.html">2001.Kanji.Odyssey series</a>, like "32 二 19" will be formatted as "今32 二2 日19".</dd>
 <dt>Create clozes</dt>
