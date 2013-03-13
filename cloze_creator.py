@@ -59,6 +59,21 @@ def formatFrameNumber(token):
         return kanji + token
     return token + frame
 
+def bulkAddClozes(nids):
+    mw.checkpoint("Bulk-add clozes")
+    mw.progress.start()
+    for nid in nids:
+        note = mw.col.getNote(nid)
+        (c,e) = targetFields(note)
+        # does it contain data?
+        if not c or not e or not note[c] or not note[e]:
+            continue
+        _formatFrameNumbers(note, c, e)
+        _createClozes(note, c, e)
+        _repositionCards(note, c, e)
+    mw.progress.finish()
+    mw.reset()
+
 def formatFrameNumbers(nids):
     mw.checkpoint("Format frame numbers")
     mw.progress.start()
@@ -69,7 +84,6 @@ def formatFrameNumbers(nids):
         if not e or not note[e]:
            continue
         _formatFrameNumbers(note, c, e)
-        note.flush()
     mw.progress.finish()
     mw.reset()
 
@@ -84,6 +98,7 @@ def _formatFrameNumbers(note, clozeField, extraField):
            continue
         txt.append(frame)
     note[extraField] = u' '.join(txt)
+    note.flush()
 
 def createClozes(nids):
     mw.checkpoint("Create clozes")
@@ -95,7 +110,6 @@ def createClozes(nids):
         if not c or not e or not note[c] or not note[e]:
             continue
         _createClozes(note, c, e)
-        note.flush()
     mw.progress.finish()
     mw.reset()
 
@@ -114,6 +128,7 @@ def _createClozes(note, clozeField, extraField):
         else:
             text.append(c)
     note[clozeField] = ''.join(text)
+    note.flush()
 
 def repositionCards(nids):
     mw.checkpoint("Reposition cards")
@@ -166,19 +181,26 @@ def setupMenu(browser):
     menuCloze.setTitle("&Cloze")
     browser.form.menubar.insertMenu(
         browser.form.menu_Help.menuAction(), menuCloze)
+    a = QAction("Bulk-add clozes", browser)
+    browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onBulkAdd(e))
+    menuCloze.addAction(a)
+    menuCloze.addSeparator()
     a = QAction("&Format frame numbers", browser)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onFormat(e))
     menuCloze.addAction(a)
     a = QAction("&Create clozes", browser)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onCreate(e))
     menuCloze.addAction(a)
-    a = QAction("Re&position cards", menuCloze)
+    a = QAction("&Reposition cards", menuCloze)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onReposition(e))
     menuCloze.addAction(a)
     menuCloze.addSeparator()
     a = QAction("Re&generate frame numbers", browser)
     browser.connect(a, SIGNAL("triggered()"), lambda e=browser: onRegenerate(e))
     menuCloze.addAction(a)
+
+def onBulkAdd(browser):
+    bulkAddClozes(browser.selectedNotes())
 
 def onFormat(browser):
     formatFrameNumbers(browser.selectedNotes())
