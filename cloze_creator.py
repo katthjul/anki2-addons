@@ -20,6 +20,7 @@ f2kdict = defaultdict(str)
 
 # Regex patterns
 pCloze = re.compile("{{c(\d+)::(.+?)}}")
+pFrame = re.compile("\s*(\D)(\d+)")
 
 def initAddon():
     for ln in codecs.open(default_file, 'r', 'utf-8'):
@@ -38,7 +39,7 @@ def targetFields(note):
     return (cloze,extra)
 
 def extractFrameNumbers(text):
-    matches = re.findall("\s*(\D)(\d+)", text)
+    matches = pFrame.findall(text)
     return dict([(c,int(f)) for (c,f) in matches])
 
 def extractClozes(text):
@@ -67,19 +68,22 @@ def formatFrameNumbers(nids):
         # does it contain data?
         if not e or not note[e]:
            continue
-        extraText = mw.col.media.strip(note[e])
-        txt = []
-        for token in extraText.split():
-            frame = formatFrameNumber(token)
-            # don't destroy data
-            if not frame:
-               txt.append(token)
-               continue
-            txt.append(frame)
-        note[e] = u' '.join(txt)
+        _formatFrameNumbers(note, c, e)
         note.flush()
     mw.progress.finish()
     mw.reset()
+
+def _formatFrameNumbers(note, clozeField, extraField):
+    extraText = mw.col.media.strip(note[extraField])
+    txt = []
+    for token in extraText.split():
+        frame = formatFrameNumber(token)
+        # don't destroy data
+        if not frame:
+           txt.append(token)
+           continue
+        txt.append(frame)
+    note[extraField] = u' '.join(txt)
 
 def createClozes(nids):
     mw.checkpoint("Create clozes")
@@ -90,23 +94,26 @@ def createClozes(nids):
         # does it contain data?
         if not c or not e or not note[c] or not note[e]:
             continue
-        k2f = extractFrameNumbers(note[e])
-        c2k = extractClozes(note[c])
-        # cannot handle note with existing clozes
-        if c2k:
-            continue
-        text = []
-        index = 1
-        for ch in note[c]:
-            if ch in k2f:
-                text.append("{{c%d::%s}}" % (index, ch))
-                index += 1
-            else:
-                text.append(ch)
-        note[c] = ''.join(text)
+        _createClozes(note, c, e)
         note.flush()
     mw.progress.finish()
     mw.reset()
+
+def _createClozes(note, clozeField, extraField):
+    c2k = extractClozes(note[clozeField])
+    k2f = extractFrameNumbers(note[extraField])
+    # cannot handle note with existing clozes
+    if c2k:
+        return
+    text = []
+    index = 1
+    for c in note[clozeField]:
+        if c in k2f:
+            text.append("{{c%d::%s}}" % (index, c))
+            index += 1
+        else:
+            text.append(c)
+    note[clozeField] = ''.join(text)
 
 def repositionCards(nids):
     mw.checkpoint("Reposition cards")
@@ -117,20 +124,23 @@ def repositionCards(nids):
         # does it contain data?
         if not c or not e:
            continue
-        clozeText = stripHTML(mw.col.media.strip(note[c]))
-        k2f = extractFrameNumbers(note[e])
-        c2k = extractClozes(clozeText)
-        for card in note.cards():
-            # only modify new cards
-            if card.type != 0:
-                continue
-            kanji = c2k[card.ord + 1]
-            if kanji not in k2f:
-                continue
-            card.due = k2f[kanji]
-            card.flush()
+        _repositionCards(note, c, e)
     mw.progress.finish()
     mw.reset()
+
+def _repositionCards(note, clozeField, extraField):
+    clozeText = stripHTML(mw.col.media.strip(note[clozeField]))
+    k2f = extractFrameNumbers(note[extraField])
+    c2k = extractClozes(clozeText)
+    for card in note.cards():
+        # only modify new cards
+        if card.type != 0:
+            continue
+        kanji = c2k[card.ord + 1]
+        if kanji not in k2f:
+            continue
+        card.due = k2f[kanji]
+        card.flush()
 
 def regenerateFrameNumbers(nids):
     mw.checkpoint("Regenerate frame numbers")
