@@ -1,4 +1,10 @@
 # -*- coding: UTF-8 -*-
+# Author: Pauline Gomér <pauline.gomer@gmail.com>
+# License: WTF Public License
+#
+# Bulk creation of clozes that are sorted by frequency of use.
+#
+
 import os, re, itertools
 from anki.hooks import addHook
 from anki.utils import stripHTML
@@ -88,7 +94,7 @@ def formatFrameNumbers(nids):
     mw.reset()
 
 def _formatFrameNumbers(note, clozeField, extraField):
-    extraText = mw.col.media.strip(note[extraField])
+    extraText = stripHTML(note[extraField])
     txt = []
     for token in extraText.split():
         frame = formatFrameNumber(token)
