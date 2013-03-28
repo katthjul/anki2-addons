@@ -6,7 +6,7 @@ Generate clozes from frame numbers listed in field Extras.
 
 Status: **Alpha**
 
-File(s): *cloze_creator.py*, *cloze_creator/frame-list.txt*
+File(s): *cloze_creator.py*, *clozecreator/frame-list.txt*, *clozecreator/gui.py*, *closecreator/utils.py*
 
 ### Usage
 The add-on creates a new menu Cloze in the browser. The menu contains several operations that can be done to cards with the note type Cloze.
