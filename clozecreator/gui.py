@@ -5,65 +5,27 @@
 # Bulk-add clozes that are sorted by frequency of use.
 #
 
-import os, re, itertools
 from anki.hooks import addHook
 from anki.utils import stripHTML
 from aqt import mw
 from aqt.qt import *
-import codecs
-from collections import defaultdict
+from clozecreator.utils import *
 
 # (model, source, destination)
-targets = [
+clozeModel = [
     (u'Cloze', u'Text', u'Extra'),
     (u'穴埋め', u'テキスト', u'追加'),
 ]
-default_file = os.path.join(os.path.dirname(__file__), 
-                            '.', 'frame-list.txt')
-# Initialize our dictionaries
-k2fdict = defaultdict(int)
-f2kdict = defaultdict(str)
-
-# Regex patterns
-pCloze = re.compile("{{c(\d+)::(.+?)}}") # {{c<number>::<text>}}
-pFrame = re.compile("\s*(\D)(\d+)") # <kanji><number>
-
-def initAddon():
-    for ln in codecs.open(default_file, 'r', 'utf-8'):
-        a,b = ln.split()
-        k2fdict[a] = b
-        f2kdict[b] = a
 
 def clozeFields(note):
     cloze = None
     extra = None
-    for (m,c,e) in targets:
+    for (m,c,e) in clozeModel:
        if m in note.model()['name']:
            cloze = c
            extra = e
            break
     return (cloze,extra)
-
-def extractFrameNumbers(text):
-    matches = pFrame.findall(text)
-    return dict([(c,int(f)) for (c,f) in matches])
-
-def extractClozes(text):
-    c2k = {}
-    for (ci,ct) in pCloze.findall(text):
-        kanji = ct.split("::")[0]
-        # zero-based index
-        c2k[int(ci)] = kanji
-    return c2k
-
-def formatFrameNumber(token):
-    kanji = f2kdict[token]
-    frame = k2fdict[token]
-    if not kanji and not frame:
-       return None
-    if kanji:
-        return kanji + token
-    return token + frame
 
 def bulkAddClozes(nids):
     mw.checkpoint("Bulk-add clozes")
@@ -95,15 +57,7 @@ def formatFrameNumbers(nids):
 
 def _formatFrameNumbers(note, clozeField, extraField):
     extraText = stripHTML(note[extraField])
-    txt = []
-    for token in extraText.split():
-        frame = formatFrameNumber(token)
-        # don't destroy data
-        if not frame:
-           txt.append(token)
-           continue
-        txt.append(frame)
-    note[extraField] = u' '.join(txt)
+    note[extraField] = u' '.join(formatFrames(extraText.split()))
     note.flush()
 
 def createClozes(nids):
@@ -121,15 +75,16 @@ def createClozes(nids):
 
 def _createClozes(note, clozeField, extraField):
     c2k = extractClozes(note[clozeField])
-    k2f = extractFrameNumbers(note[extraField])
+    k2f = extractFrames(note[extraField])
     # cannot handle note with existing clozes
     if c2k:
         return
     text = []
     index = 1
     for c in note[clozeField]:
-        if c in k2f:
-            text.append("{{c%d::%s}}" % (index, c))
+        # 0: kanji, 1: hint
+        if c[0] in k2f:
+            text.append(formatCloze(index, c))
             index += 1
         else:
             text.append(c)
@@ -151,7 +106,7 @@ def repositionCards(nids):
 
 def _repositionCards(note, clozeField, extraField):
     clozeText = stripHTML(mw.col.media.strip(note[clozeField]))
-    k2f = extractFrameNumbers(note[extraField])
+    k2f = extractFrames(note[extraField])
     c2k = extractClozes(clozeText)
     for card in note.cards():
         # only modify new cards
@@ -173,11 +128,7 @@ def regenerateFrameNumbers(nids):
         if not c:
            continue
         clozeText = stripHTML(mw.col.media.strip(note[c]))
-        kanji = []
-        for c in clozeText:
-            if c in k2fdict and c not in kanji:
-                kanji.append(c)
-        note[e] = u' '.join([formatFrameNumber(c) for c in kanji])
+        note[e] = u' '.join([formatFrame(c) for c in extractKanji(clozeText)])
         note.flush()
     mw.progress.finish()
     mw.reset()
@@ -220,5 +171,4 @@ def onReposition(browser):
 def onRegenerate(browser):
     regenerateFrameNumbers(browser.selectedNotes())
 
-initAddon()
 addHook("browser.setupMenus", setupMenu)
