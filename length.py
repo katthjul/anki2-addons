@@ -5,7 +5,7 @@ from aqt import mw
 import re
 
 # List of (model, field)
-targets = [('Japanese', 'Expression')]
+targets = [('Basic', 'Front'), ('Japanese', 'Expression')]
 # Should punctuations marks count towards the length? False/True
 ignore_punct = False
 
