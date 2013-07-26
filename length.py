@@ -2,9 +2,12 @@
 from anki.hooks import addHook
 from anki.utils import ids2str, stripHTML
 from aqt import mw
+import re
 
 # List of (model, field)
 targets = [('Japanese', 'Expression')]
+# Should punctuations marks count towards the length? False/True
+ignore_punct = False
 
 def onSearch(cmds):
     cmds['len'] = findByExactLength
@@ -31,6 +34,8 @@ def findBy(fn, val):
         for nid in mw.col.findNotes("mid:%s" % mid):
             note = mw.col.getNote(nid)
             text = stripHTML(note[mods[mid]['name']])
+            if ignore_punct:
+                text = re.sub('[\W]+', '', text, flags=re.UNICODE) 
             if fn(text, val):
                 nids.append(nid)
     return "n.id in %s" % ids2str(nids)

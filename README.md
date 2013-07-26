@@ -27,12 +27,12 @@ The add-on creates a new menu Cloze in the browser. The menu contains several op
 ## Search by length in browser
 Find sentences of a given exact/maximum/minimum length in the browser.
 
-Status: **Experimental**. Requires changes to Anki 2, see [Ticket 699](https://anki.lighthouseapp.com/projects/100923-ankidesktop/tickets/699-add-hook-for-search-command).
+Status: **Alpha**
 
 File(s): *length.py*
 
 ### Usage
-The add-on extends the available search commands in the browser. By default, it only looks at the note type 'Japanese' and its field 'Expression'. Edit the source file to add other notes.
+The add-on extends the available search commands in the browser. By default, it only looks at the note type 'Japanese' and its field 'Expression'. Edit the source file to add other notes and/or exclude punctuation marks from the length.
 
 <dl>
 <dt>len:6</dt>
