@@ -32,7 +32,7 @@ Status: **Alpha**
 File(s): *length.py*
 
 ### Usage
-The add-on extends the available search commands in the browser. By default, it only looks at the note type 'Japanese' and its field 'Expression'. Edit the source file to add other notes and/or exclude punctuation marks from the length.
+The add-on extends the available search commands in the browser. By default, it only looks at the note type/field: 'Basic/Front' and 'Japanese/Expression'. Edit the source file to add other notes and/or exclude punctuation marks from the length.
 
 <dl>
 <dt>len:6</dt>
